@@ -1,7 +1,8 @@
 {
+  "type": "module",
   "name": "prj1-sol",
   "version": "1.0.0",
-  "description": "",
+  "description": "Name:\t\tXXX B-Number:\tXXX Email:\t\tXXX",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
