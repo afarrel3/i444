@@ -52,12 +52,12 @@ const DATE_RE = /^\d{4}\-\d\d\-\d\d(T[012]\d:[0-5]\d(:[0-6]\dZ)?)?$/;
 const META = {
 
   users: [
-    {
+    { // ID property
       name: 'id',
       friendlyName: 'user ID',
       required: [ 'create', 'update', 'remove' ],
     },
-    {
+    { // EMAIL property
       name: 'email', 
       friendlyName: 'user email',
       checkFn: v => v.split('@').length === 2,
@@ -66,21 +66,21 @@ const META = {
       forbidden: [ 'remove' ],
       doIndex: true,
     },
-    {
+    { // FIRST NAME property
       name: 'firstName', 
       friendlyName: 'user first name',
       required: [ 'create' ],
       forbidden: [ 'remove' ],
       doIndex: true,
     },
-    {
+    { // LAST NAME property
       name: 'lastName', 
       friendlyName: 'user last name',
       required: [ 'create' ],
       forbidden: [ 'remove' ],
       doIndex: true,
     },
-    {
+    { // ROLES property: each user can have one or more roles
       name: 'roles', 
       friendlyName: 'user roles',
       checkFn:  v => v instanceof Array && v.length > 0 &&
@@ -90,7 +90,7 @@ const META = {
       required: [ 'create' ],
       forbidden: [ 'find', 'remove' ],
     },
-    {
+    { // CREATION TIME property
       name: 'creationTime', 
       friendlyName: 'user creation time',
       checkFn: v => v.match(DATE_RE),
@@ -99,7 +99,7 @@ const META = {
       forbidden: [ 'find', 'update', 'remove' ],
       defaultFn: () => new Date(),
     },
-    {
+    { // UPDATE TIME property
       name: 'updateTime', 
       friendlyName: 'user update time',
       checkFn: v => v.match(DATE_RE),

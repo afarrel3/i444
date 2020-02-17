@@ -41,6 +41,14 @@ export default class Blog544 {
 
   constructor(meta, options) {
     //@TODO
+    
+    //Need a map for each category (users, articles, comments)
+    //indexed by their id fields
+
+
+    this.blog = { users: new Map(), articles: new Map(), comments: new Map() };
+    
+
     this.meta = meta;
     this.options = options;
     this.validator = new Validator(meta);
@@ -48,12 +56,21 @@ export default class Blog544 {
 
   static async make(meta, options) {
     //@TODO
+    
+    
+
     return new Blog544(meta, options);
   }
 
   /** Remove all data for this blog */
   async clear() {
     //@TODO
+
+    //Clear all data from the blog object maps
+    this.blog.users.clear();
+    this.blog.articles.clear();
+    this.blog.comments.clear();
+    this.blog.clear();
   }
 
   /** Create a blog object as per createSpecs and 
@@ -62,7 +79,28 @@ export default class Blog544 {
   async create(category, createSpecs) {
     const obj = this.validator.validate(category, 'create', createSpecs);
     //@TODO
-  }
+
+    //Determine whether the given blog object already exists
+    if (this.find(category, { id: obj.id }).length > 0) {
+
+    }
+    
+    //Determine whether the blog object's category is 'users'
+    if (category === 'users') {
+      //Add the created blog object to the corresponding mapping
+      this.blog.users.set(obj.id, obj);
+    }
+    else if (category === 'articles') {
+      obj.id = generateId(category);
+      this.blog.articles.set(obj.id, obj);
+    }
+    else {
+      obj.id = generateId(category);
+      this.blog.comments.set(obj.id, obj);
+    }
+    
+    return obj.id;
+  } // !create
 
   /** Find blog objects from category which meets findSpec.  Returns
    *  list containing up to findSpecs._count matching objects (empty
@@ -71,7 +109,56 @@ export default class Blog544 {
   async find(category, findSpecs={}) {
     const obj = this.validator.validate(category, 'find', findSpecs);
     //@TODO
-    return [];
+
+    let items = [];
+    const matches = [];
+
+    let mapping = new Map();
+
+    //Determine which category map to use
+    if (category === 'users') { //Use 'users' map
+      items = Array.from(this.blog.users.values());
+      mapping = this.blog.users;
+      //console.log(this.blog.users);
+    }
+    else if (category === 'articles') { // User 'articles' map
+      items = Array.from(this.blog.articles.values());
+      mapping = this.blog.articles;
+    }
+    else if (category === 'comments') { //User 'comments' map
+      items = Array.from(this.blog.comments.values());
+      mapping = this.blog.comments;
+    }
+    else {
+      return [];
+    }
+    //console.log(mapping);
+
+    //Determine whether a _count was specified
+    if (findSpecs._count === undefined) {
+      //Default the _count spec
+      findSpecs._count = DEFAULT_COUNT
+    }
+
+    //Determine whether an ID was given to search by
+    if (findSpecs.id === undefined) {
+      //For each item, up to the default item count to return
+      for (let i = 0; (i < findSpecs._count) && (i < items.length); i++) {
+        //Add the current item in the 'category' map to the return array
+        //console.log(items[i]);
+        matches.push(items[i]);
+      }
+      //console.log(matches);
+      return matches;
+    }
+
+    //Determine whether an item with the given ID is in the map
+    if (mapping.has(findSpecs.id)) {
+      //Add the item with the given ID to the return array
+      matches.push(mapping.get(findSpecs.id));
+    }
+
+    return matches;
   }
 
   /** Remove up to one blog object from category with id == rmSpecs.id. */
@@ -90,4 +177,35 @@ export default class Blog544 {
   
 }
 
+const DEFAULT_COUNT = 5;
+
 //You can add code here and refer to it from any methods in Blog544.
+
+/*
+Generate a random id for article or comment objects
+article IDs returned in the form XX.XXXXX
+comment IDs returned in the form XXX.XXXXX
+*/
+function generateId(category)
+{
+  let wholeNumber;
+
+  //Generate a random number, in form XXXXX
+  let fraction = Math.floor(Math.random() * 90000) + 10000;
+
+  //Determine the type of ID to generate
+  if (category === 'articles') {
+    //Generate a random number, in form xx
+    wholeNumber = Math.floor(Math.random() * 90) + 10;
+  }
+  else if (category === 'comments') {
+    //Generate a random number, in form XXX
+    wholeNumber = Math.floor(Math.random() * 900) + 100;
+  }
+  else { //Unrecognized category
+    return undefined;
+  }
+
+  //Put the numbers together, separated by a '.'
+  return (wholeNumber.toString() + '.' + fraction.toString());
+}
