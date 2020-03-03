@@ -45,10 +45,29 @@ export default class Blog544 {
     //Need a map for each category (users, articles, comments)
     //indexed by their id fields
 
+    this.bog = {};
 
     this.blog = { users: new Map(), articles: new Map(), comments: new Map() };
 
-    
+    this.users = new Map();
+    for (const [category, infos] of Object.entries(meta)) {
+
+      this.bog[category] = Object.fromEntries(infos.map(info => [info.name, info]));
+
+      console.log(infos.map(info => info.entries(value => [value.name, value])));
+      console.log('-------------------------');
+
+
+      /* console.log(infos.map(function(info) {
+        if (info)
+      }
+      ))); */
+
+      //if ()
+
+    }
+
+    //console.log(this.bog);
 
     this.meta = meta;
     this.options = options;
