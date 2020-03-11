@@ -29,49 +29,46 @@ export default class Validator {
   }
 
   validate(category, act, obj) {
-    //Declare new object to return for the given category and action
-    //i.e. create(), find()...
     const out = {};
-
-    //Get the information for the given category
     const infos = this.meta[category];
-      
-    //Determine whether an invalid category was given
-    //i.e. not 'users', 'articles', 'comments'
     if (!infos) {
       throw [ new BlogError(`BAD_CATEGORY', 'unknown category ${category}`) ];
-    }
-
-    //Create an array to hold errors
+    } 
     const errors = [];
 
     //Get the required fields for the given category and action
     const required = new Set(this.actionFields[category][act].required);
 
     //Get the 'forbidden' and 'optional' fields for the given category and action
+    
     const { forbidden, optional } = this.actionFields[category][act];
 
     //Build an error message suffix for the given category and action
     const msgSuffix = `for ${category} ${act}`;
 
-    //For 
     for (const [name, value] of Object.entries(obj)) {
       
       required.delete(name);
 
       const info = infos[name];
-      //
-      if (name.startsWith('_')) {
-        out[name] = value;
+
+      //Determine whether the current field belongs to the 'forbidden' list
+      if (forbidden.has(name)) {
+	      const msg = `the ${info.friendlyName} field is forbidden ${msgSuffix}`;
+	      errors.push(new BlogError('BAD_FIELD', msg));
+      }
+      else if (name.startsWith('_')) {
+        if (name === '_id') {
+          const msg = `the internal mongo ${name} field is forbidden for ${category} ${act}`;
+          errors.push(new BlogError('BAD_FIELD', msg));
+        }
+        else {
+          out[name] = value;
+        }
       }
       //Determine whether the current field has no info
       else if (info === undefined) {
 	      const msg = `unknown ${category} field ${name} ${msgSuffix}`;
-	      errors.push(new BlogError('BAD_FIELD', msg));
-      }
-      //Determine whether the current field belongs to the 'forbidden' list
-      else if (forbidden.has(name)) {
-      	const msg = `the ${info.friendlyName} field is forbidden ${msgSuffix}`;
 	      errors.push(new BlogError('BAD_FIELD', msg));
       }
       //Determine whether the current field has a 'checkFn' attribute, and the
@@ -82,7 +79,7 @@ export default class Validator {
       }
       else {
         //Add the field's name and attribute to the return object
-        out[name] = info.data ? info.data(value) : value;
+	      out[name] = info.data ? info.data(value) : value;
       }
     } //for
 
@@ -119,6 +116,7 @@ export default class Validator {
     //i.e. 'comments' object resulting from 'create' 
     return out;
   }
+  
 };
 
 function makeActions(infos) {
@@ -151,7 +149,6 @@ function makeActions(infos) {
 
         //Add the current field name to the list of fields that are 'required' or
         //'forbidden' for a given action for the current category
-        //
         //i.e. adding 'firstName' to the 'required' list for the 'create' action
         //in the 'users' category
     	  actions[act][k].add(name);
