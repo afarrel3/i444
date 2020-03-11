@@ -51,21 +51,27 @@ export default class Blog544 {
     this.options = options;
     this.client = client;
     this.db = db;
+
+
+
+
+
     this.validator = new Validator(meta);
   }
 
   /** options.dbUrl contains URL for mongo database */
   static async make(meta, options) {
     //Validate the given mongodb url is of a valid format
-    if (!options.dbUrl.match(/(mongodb:\/\/)([a-zA-Z0-9]+):([0-9]+)/)) {
+    if (!options.dbUrl.match(/(mongodb:\/\/)([a-zA-Z0-9]+):([0-9]+)[\/DB]?/)) {
       throw [ new BlogError('DB', `bad mongo url ${options.dbUrl}`) ];
     }
 
     //Connect to the mongodb database
     const client = await mongo.connect(options.dbUrl, MONGO_CONNECT_OPTIONS);
-    const db = client.db(DB_NAME);
 
-    //console.log(await db.collection(COMMENTS_TABLE)); //REMOVE
+    //Save a reference to the database
+    const db = client.db(DB_NAME);
+    //const usersCollection = db.collection()
     
     return new Blog544(meta, options, client, db);
   }
@@ -90,19 +96,70 @@ export default class Blog544 {
     const obj = this.validator.validate(category, 'create', createSpecs);
     const errors = [];
 
-    //Add the _id field to the created object
-    obj._id = obj.id;
+    //Determine how to handle the _id for the object to create
+    if (category === 'users') {
+      //Try to find the user in the database
+      const foundUser = await this.find(category, {id: obj.id});
 
-    //Determine whether the created object already exists in the database
-    const foundObj = await this.find(category, {id: obj.id});
-    if (foundObj.length === 0) {
-      //Add the created object to the DB
-      await this.db.collection(category).insertOne(obj);
-    }
+      //Determine whether the user already exists
+      if (foundUser.length > 0) {
+        const msg = `object with id ${obj.id} already exists for ${category}`;
+        errors.push(new BlogError('EXISTS', msg));
+      }
+      else {
+        //Add the _id field to the created object
+        obj._id = obj.id;
+
+        //Add the created object to the DB
+        await this.db.collection(category).insertOne(obj);
+      }
+    } //users
+    else if (category === 'articles') {
+      //Generate an id for the article
+      obj.id = obj._id = generateId(category);
+
+      //Try to find the user for the article in the database
+      const foundUser = await this.find('users', {id: obj.authorId});
+
+      //Determine whether the user already exists for this article
+      if (foundUser.length > 0) {
+        //Add the article to the database
+        await this.db.collection(category).insertOne(obj);
+      }
+      else {
+        const msg = `user with id ${obj.authorId} does not exist for article id ${obj.id}, title: ${obj.title}`;
+        errors.push(new BlogError('EXISTS', msg));
+      }
+    } //articles
     else {
-      const msg = `object with id ${obj.id} already exists for ${category}`;
-      errors.push(new BlogError('EXISTS', msg));
-    }
+      //Generate an id for the comment
+      obj.id = obj._id = generateId(category);
+
+      //Try to find the author user in the database
+      const foundUser = await this.find('users', {id: obj.commenterId});
+
+      //Try to find the article in the database
+      const foundArticle = await this.find('articles', {id: obj.articleId});
+
+      //Determine whether the author for this article exists
+      if (foundUser.length === 0) {
+        //Throw an error message
+        const msg = `user with id ${obj.commenterId} does not exist for comment id ${obj.id}`;
+        errors.push(new BlogError('EXISTS', msg));
+      }
+
+      //Determine whether the article for this comment exists
+      if (foundArticle.length === 0) {
+        //Throw an error message
+        const msg = `article with id ${obj.articleId} does not exist for comment id ${obj.id}`;
+        errors.push(new BlogError('EXISTS', msg));
+      }
+
+      if ((foundUser.length > 0) && (foundArticle.length > 0)) {
+        //Add the created blog object to the corresponding mapping
+        await this.db.collection(category).insertOne(obj);
+      }
+    } //comments
 
     if (errors.length > 0) throw errors;
     
@@ -125,6 +182,7 @@ export default class Blog544 {
    *  
    */
   async find(category, findSpecs={}) {
+    //console.log(category); //REMOVE
     const obj = this.validator.validate(category, 'find', findSpecs);
 
     //Make a copy of findSpecs to modify
@@ -147,6 +205,8 @@ export default class Blog544 {
       .project({_id: 0})
       .sort('id', 1)
       .toArray();
+
+    //console.log(foundObjs);
     
     return foundObjs;
   } //find
@@ -154,80 +214,83 @@ export default class Blog544 {
   /** Remove up to one blog object from category with id == rmSpecs.id. */
   async remove(category, rmSpecs) {
     const obj = this.validator.validate(category, 'remove', rmSpecs);
-
-    //Determine whether the _id field was specified
-    if (rmSpecs.id === undefined) {
-      const msg = `missing id for ${category}`;
-      throw [new BlogError('MISSING_FIELD', msg)];
-    }
+    const errors = [];
 
     //Check to see if the object to remove exists in the database
     const foundObj = await this.db.collection(category).find(rmSpecs)
       .project({_id: 1})
       .toArray();
-      
-    //Determine whether the object to remove was found
-    if (foundObj.length === 0) {
-      const msg = `object ${rmSpecs.id} does not exist for ${category}`;
-      throw [new BlogError('EXISTS', msg)];
-    }
+    
+    //Determine whether the item to remove exists
+    if (foundObj.length > 0) {
+      if (category === 'users') {
+        //Determine whether the given user has any linked articles
+        const foundArticles = await this.db.collection('articles').find({authorId: rmSpecs.id}).toArray();
+
+        //Determine wehther the given user has any linked comments
+        const foundComments = await this.db.collection('comments').find({commenterId: rmSpecs.id}).toArray();
+
+        for (const article of foundArticles) {
+          const msg = `user ${rmSpecs.id} referenced by authorId for article ${article.id}`;
+          errors.push(new BlogError('BAD_ID', msg));
+        }
+        
+        for (const comment of foundComments) {
+          const msg = `user ${rmSpecs.id} referenced by commenterId for comment ${comment.id}`;
+          errors.push(new BlogError('BAD_ID', msg));
+        }
+      } // if
+      else if (category === 'articles') {
+        //Determine wehther the given article has any linked comments
+        const foundComments = await this.db.collection('comments').find({articleId: rmSpecs.id}).toArray();
+
+        for (const comment of foundComments) {
+          const msg = `article ${rmSpecs.id} referenced by articleId for comment ${comment.id}`;
+          errors.push(new BlogError('BAD_ID', msg));
+        }
+      } //else if
+      else {
+        //Comments have no dependencies
+      } //else
+    } //if
     else {
-      //Remove the specified object from the database
+      const msg = `object with id ${rmSpecs.id} does not exist for ${category}`;
+      errors.push(new BlogError('EXISTS', msg));
+    }
+    
+    //Determine whether any linked objects were found for the user
+    if (errors.length === 0) {
       await this.db.collection(category).deleteOne({_id: foundObj[0]._id});
     }
+
+    if (errors.length > 0) { throw errors; }
   } //remove
 
   /** Update blog object updateSpecs.id from category as per
    *  updateSpecs.
    */
   async update(category, updateSpecs) {
-    const errors = [];
     const obj = this.validator.validate(category, 'update', updateSpecs);
-    //console.log(obj); //REMOVE
+    const errors = [];
 
     const copySpecs = Object.assign({}, updateSpecs);
-    //console.log(copySpecs); //REMOVE
-    const id = copySpecs.id;
+    const updateId = copySpecs.id;
     delete copySpecs.id;
-    //console.log(copySpecs); //REMOVE
 
     //Get the object to update
-    const updateObj = await this.find(category, {id: copySpecs.id});
-    //console.log(updateObj); //REMOVE
-    //console.log(updateObj.length); //REMOVE
+    const updateObj = await this.db.collection(category).find({id: updateId})
+      .toArray();
+    const toUpdate = Object.assign({}, updateObj[0]);
 
-    // if (updateObj.length === 0) {
-    //   const msg = `no ${category} for id ${updateObj.id} in update`;
-    //   errors.push(new BlogError('BAD_ID', msg));
-    // }
-    // else {
-    //   //Update the object in the database
-    //   //console.log(updateObj); //REMOVE
-    //   await this.db.collection(category).updateOne(updateObj, updateSpecs);
-    // }
-    //console.log(Object.getOwnPropertyNames(copySpecs));
-
-    for (const [key, value] in copySpecs) {
-      console.log(key); //REMOVE
-      console.log(value); //REMOVE
-      await this.db.collection(category).updateOne({updateObj: updateObj._id},
-        { $set: {key: value} },
-        { upsert: true });
+    //Update the found object with the updated fields
+    for (const [key, value] of Object.entries(copySpecs)) {
+      toUpdate[key] = copySpecs[key];
     }
 
-    //await this.db.collection(category).updateOne(updateObj, copySpecs);
+    //Replace the original object in the database with the updated object
+    await this.db.collection(category).replaceOne({_id: updateObj[0]._id}, toUpdate);
 
-    const repeat = await this.find(category, {id: updateSpecs.id});
-    console.log(repeat);
     if (errors.length > 0) throw errors;
-
-
-
-
-
-
-
-
   } //update
   
 } //Blog544
@@ -238,64 +301,59 @@ const MONGO_CONNECT_OPTIONS = { useUnifiedTopology: true };
 
 const DB_NAME = 'prj2';
 
-const USERS_TABLE = 'userInfos';
-const ARTICLES_TABLE = 'articleInfos';
-const COMMENTS_TABLE = 'commentInfos';
+const idNumbers =[];
 
+/*
+Generate a random id for article or comment objects
+article IDs returned in the form XX.XXXXX
+comment IDs returned in the form XXX.XXXXX
+*/
+function generateId(category)
+{
+  const errors = [];
+  let number;
+  let wholeNumber;
+  let duplicateId = true;
 
-//-----------------------------------------
-//Helper functions from 'UserStore' example
-//-----------------------------------------
+  do {
+    //Generate a random number, in form XXXXX
+    let fraction = Math.floor(Math.random() * 90000) + 10000;
 
-function fromDbUsers(dbUsers) {
-  return dbUsers.map((user) => fromDbUsers(user));
-}
+    //Determine the type of ID to generate
+    if (category === 'articles') {
+      //Generate a random number, in form xx
+      wholeNumber = Math.floor(Math.random() * 90) + 10;
+    }
+    else if (category === 'comments') {
+      //Generate a random number, in form XXX
+      wholeNumber = Math.floor(Math.random() * 900) + 100;
+    }
+    else { //Unrecognized category
+      const msg = `category ${category} has no ID field`;
+      errors.push(new BlogError('BAD_FIELD_VALUE', msg));
+      return undefined;
+    }
+    
+    //Combine the whole and fractional numbers into an ID
+    number = (wholeNumber.toString() + '.' + fraction.toString());
 
-function fromDBUser(dbUser) {
-  const user = Object.assign({}, dbUser);
-  delete user._id;
-  return user;
-}
+    //Determine whether the ID has already been generated
+    if (idNumbers.includes(number) === true) {
+      //Push an error for the duplicate ID
+      const msg = `ID ${number} already exists`;
+      errors.push(new BlogError('BAD_FIELD_VALUE', msg));
+    }
+    else {
+      //No duplicate ID was found
+      duplicateId = false;
+    }
 
-async function toDbUsers(users, mustHaveId=true) {
-  //Mapping async fn returns list of promises
-  const userPromises = users.map(async (user) => await toDbUsers(user, mustHaveId));
+  } while (duplicateId); //Loop until a unique ID is generated
 
-  //Use Primise.all() to unwrap promised values
-  return await Promise.all(userPrimises);
-}
+  //Add the Id to the array
+  idNumbers.push(number);
 
-async function toDbUser(user, mustHaveId) {
-  if (user._id) {
-    const msg = `invalid property name _id for user ${JSON.stringify(user)}`;
-    throw new UserError('BAD_KEY', msg);
-  }    
-  const dbUser =  Object.assign({}, user); //shallow copy
-  dbUser.id = dbUser.id || await gitEmail();
-  if (mustHaveId && !dbUser.id) {
-    const msg = `cannot get id for user ${JSON.stringify(user)}`;
-    throw new UserError('NO_ID', msg);
-  }
-  if (dbUser.id) dbUser._id = dbUser.id;
-  return dbUser;
-}
-
-async function gitEmail() {
-  try {
-    const cmd = 'git config --global --get user.email';
-    const {stdout, stderr} = await exec(cmd); //destructuring
-    return stdout.trim();
-  }
-  catch (err) {
-    throw new UserError('ID_FAIL', 'cannot get git email for current user');
-  }
-}
-
-function isDuplicateError(err) {
-  return (err.code === 11000);
-}
-
-function UserError(code, msg) {
-  this.errorCode = code;
-  this.message = msg;
-}
+  if (errors.length > 0) { throw errors; }
+  
+  return number;
+} //generateId
