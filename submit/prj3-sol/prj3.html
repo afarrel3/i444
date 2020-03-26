@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="../../assets/styles/article.css" rel="stylesheet" type="text/css" /> 
+    <title>CS 544: Project 3</title>
+    <link href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" 
+       rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML" async=""></script>    
+<link href="prj3/hl-fine_blue.css" rel="stylesheet"/>
+  </head>
+  <body>
+    <nav>
+      <ul>
+	<li><a href="../../index.html" class="material-icons">house</a></li>
+	<li><a href="../../docs/index.html">Docs</a></li>
+	<li><a href="../../exams-quizzes/index.html">Exams &amp; Quizzes</a></li>
+	<li><a href="../../exercises/index.html">Exercises</a></li>
+	<li><a href="../../hws/index.html">Homeworks</a></li>
+	<li><a href="../../misc/index.html">Misc</a></li>
+	<li><a href="../../online/index.html">Online</a></li>
+	<li><a href="../../projects/index.html">Projects</a></li>
+	<li><a href="../../slides/index.html">Slides</a></li>
+      </ul>
+    </nav>
+    <div class="content">
+      <section data-coord="prj3.umt:1:0"><h1 data-coord="prj3.umt:1:0">Project 3</h1><p data-coord="prj3.umt:3:0"><strong data-coord="prj3.umt:3:0">Due</strong>: Apr 5, by 11:59p
+</p><p data-coord="prj3.umt:5:0"><strong data-coord="prj3.umt:5:0">Important Reminder</strong>: As per the course <em data-coord="prj3.umt:5:110"><a href="../../misc/academic-honesty-statement/academic-honesty-policy.html" data-coord="prj3.umt:5:110">Academic Honesty Statement</a></em>,
+cheating of any kind will minimally result in your letter grade
+for the entire course being reduced by one level.
+</p><p data-coord="prj3.umt:9:0">This document first provides the aims of this project.  It then lists
+the requirements as explicitly as possible.  This is followed by a log
+which should help you understand the requirements.  Finally, it
+provides some hints as to how those requirements can be met.
+</p><section data-coord="prj3.umt:14:0"><h2 data-coord="prj3.umt:14:0">Aims</h2><p data-coord="prj3.umt:17:0">The aims of this project are as follows:
+</p><ul data-coord="prj3.umt:19:0"><li data-coord="prj3.umt:19:0"><p data-coord="prj3.umt:19:4">To familiarize you with implementing a REST-based web service.
+</p></li><li data-coord="prj3.umt:21:0"><p data-coord="prj3.umt:21:4">To expose you to the express.js framework.
+</p></li></ul></section><section data-coord="prj3.umt:25:0"><h2 data-coord="prj3.umt:25:0">Requirements</h2><p data-coord="prj3.umt:29:0">You must push a <samp data-coord="prj3.umt:29:16">submit/prj3-sol</samp> directory to your github
+repository such that typing <samp data-coord="prj3.umt:29:87">npm ci</samp> within that directory is
+sufficient to run a web server using <samp data-coord="prj3.umt:29:158">./index.js</samp>.
+</p><pre data-coord="prj3.umt:34:0">$ index.js PORT MONGO_DB_URL [DATA_DIR]
+</pre><p data-coord="prj3.umt:37:0">where
+</p><dl data-coord="prj3.umt:39:0"><dt data-coord="prj3.umt:39:2"> <samp data-coord="prj3.umt:39:1">PORT</samp> </dt><dd data-coord="prj3.umt:40:0"><p data-coord="prj3.umt:40:4">Specifies the port number at which the server should
+listen for incoming HTTP requests.
+</p></dd><dt data-coord="prj3.umt:43:2"> <samp data-coord="prj3.umt:43:1">MONGO_DB_URL</samp> </dt><dd data-coord="prj3.umt:44:0"><p data-coord="prj3.umt:44:4">A url to the mongo db containing the blog data.
+</p></dd><dt data-coord="prj3.umt:46:2"> <samp data-coord="prj3.umt:46:1">DATA_DIR</samp> </dt><dd data-coord="prj3.umt:47:0"><p data-coord="prj3.umt:47:4">This optional parameter should specify a path to a directory which
+contains data to be loaded into the db.  If specified, all
+the data in the db is replaced by the data from <samp data-coord="prj3.umt:47:186">DATA_DIR</samp>.
+</p></dd></dl><p data-coord="prj3.umt:51:0">You are being provided with an <samp data-coord="prj3.umt:51:31">index.js</samp> which provides the required
+command-line behavior.  What you specifically need to do is add code
+to the provided <a href="./prj3-sol/blog544-ws.js?colorize=true" data-coord="prj3.umt:51:197">blog544-ws.js</a> source file to have it implement the following
+behavior:
+</p><ul data-coord="prj3.umt:57:0"><li data-coord="prj3.umt:57:0"><p data-coord="prj3.umt:57:4">In order to implement HATEOAS, all non-empty results should have a
+<samp data-coord="prj3.umt:57:75">links</samp> property which is a list of link objects.  Each link
+object should have the following properties:
+</p><dl data-coord="prj3.umt:61:0"><dt data-coord="prj3.umt:61:6"> <samp data-coord="prj3.umt:61:1">href</samp> </dt><dd data-coord="prj3.umt:62:0"><p data-coord="prj3.umt:62:8">An absolute URL for the linked resource.
+</p></dd><dt data-coord="prj3.umt:64:6"> <samp data-coord="prj3.umt:64:1">name</samp> </dt><dd data-coord="prj3.umt:65:0"><p data-coord="prj3.umt:65:8">A name describing the contents of the linked resource.
+</p></dd><dt data-coord="prj3.umt:67:6"> <samp data-coord="prj3.umt:67:1">rel</samp> </dt><dd data-coord="prj3.umt:68:0"><p data-coord="prj3.umt:68:8">The relationship between this resource and the
+linked resource.  This should be one of the
+<em data-coord="prj3.umt:68:174"><a href="https://www.iana.org/assignments/link-relations/link-relations.xhtml" data-coord="prj3.umt:68:174">IANA Link Relations</a></em>.
+</p></dd></dl><p data-coord="prj3.umt:73:4">Minimally, the <samp data-coord="prj3.umt:73:19">links</samp> property for a resource should contain a
+self-link with <samp data-coord="prj3.umt:73:87">rel</samp> and <samp data-coord="prj3.umt:73:97">name</samp> set to <samp data-coord="prj3.umt:73:111">self</samp> and the <samp data-coord="prj3.umt:73:126">href</samp>
+giving the URL of the resource.
+</p></li><li data-coord="prj3.umt:77:0"><p data-coord="prj3.umt:77:4">A <samp data-coord="prj3.umt:77:6">GET</samp> request for the URL <samp data-coord="prj3.umt:77:32">/</samp> should return a JSON object
+containing a <samp data-coord="prj3.umt:77:81">links</samp> property having the following links:
+</p><ul data-coord="prj3.umt:80:0"><li data-coord="prj3.umt:80:0"><p data-coord="prj3.umt:80:9">A self-link as described above.
+</p></li><li data-coord="prj3.umt:82:0"><p data-coord="prj3.umt:82:9">A meta-info link with <samp data-coord="prj3.umt:82:31">rel = describedby</samp> and <samp data-coord="prj3.umt:82:55">name = meta</samp>.
+The <samp data-coord="prj3.umt:82:83">href</samp> property should give the absolute URL for
+meta-information about the blog service.  In the subsequent
+description, we refer to this <samp data-coord="prj3.umt:82:240">href</samp> as the <strong data-coord="prj3.umt:82:254">meta-info URL</strong>.
+</p></li><li data-coord="prj3.umt:87:0"><p data-coord="prj3.umt:87:9">A category link with <samp data-coord="prj3.umt:87:30">rel = collection</samp> and <samp data-coord="prj3.umt:87:53">name =
+         users|articles|comments</samp>.  The <samp data-coord="prj3.umt:87:101">href</samp> property should give
+the absolute URL for the resource corresponding to the
+<samp data-coord="prj3.umt:87:202">users|articles|comments</samp> category.  In the subsequent
+description, we refer to these <samp data-coord="prj3.umt:87:297">href</samp>'s as <strong data-coord="prj3.umt:87:309">category URLs</strong>.
+</p></li></ul></li><li data-coord="prj3.umt:93:0"><p data-coord="prj3.umt:93:4">A <samp data-coord="prj3.umt:93:6">GET</samp> request to the meta-info URL should return a JSON
+object corresponding to the meta-information for the blog
+enhanced with a <samp data-coord="prj3.umt:93:144">links</samp> property containing a self-link.
+</p></li><li data-coord="prj3.umt:97:0"><p data-coord="prj3.umt:97:4">A <samp data-coord="prj3.umt:97:6">GET</samp> request to a category URL should return a JSON object
+containing a property for the specific category; i.e. it should
+contain a <samp data-coord="prj3.umt:97:148">users</samp>, <samp data-coord="prj3.umt:97:157">articles</samp> or <samp data-coord="prj3.umt:97:171">comments</samp> property as
+appropriate.  The value of this property should be a list of
+category objects which satisfy the query parameters of the <samp data-coord="prj3.umt:97:322">GET</samp>
+request.
+</p><p data-coord="prj3.umt:104:4">Each category object should be enhanced with a <samp data-coord="prj3.umt:104:51">links</samp> property
+containing a self-link with <samp data-coord="prj3.umt:104:100">href</samp> set to a URL which can be used
+to retrieve that individual object. This URL is referred to
+subsequently as an <strong data-coord="prj3.umt:104:225">object URL</strong>.
+</p><p data-coord="prj3.umt:109:4">The top-level result should also contain a <samp data-coord="prj3.umt:109:47">links</samp> property,
+minimally containing a self-link.
+</p><p data-coord="prj3.umt:112:4">To facilitate paging through results:
+</p><ul data-coord="prj3.umt:114:0"><li data-coord="prj3.umt:114:0"><p data-coord="prj3.umt:114:8">If further results are possible, the <samp data-coord="prj3.umt:114:45">links</samp> property should
+contain a next-link with <samp data-coord="prj3.umt:114:102">name = next</samp> and <samp data-coord="prj3.umt:114:120">rel = next</samp> with
+<samp data-coord="prj3.umt:114:146">href</samp> set to the URL which can be used to fetch the next
+batch of results.
+</p></li></ul><ul data-coord="prj3.umt:119:0"><li data-coord="prj3.umt:119:0"><p data-coord="prj3.umt:119:7">If further results are possible, the top-level result should
+also contain a <samp data-coord="prj3.umt:119:90">next</samp> property giving the index for the first
+item in the next batch of results.
+</p></li></ul><ul data-coord="prj3.umt:123:0"><li data-coord="prj3.umt:123:0"><p data-coord="prj3.umt:123:8">If previous results are possible, the <samp data-coord="prj3.umt:123:46">links</samp> property should
+contain a previous-link with <samp data-coord="prj3.umt:123:107">name = prev</samp> and <samp data-coord="prj3.umt:123:125">rel = prev</samp> with
+<samp data-coord="prj3.umt:123:151">href</samp> set to the URL which can be used to fetch the previous
+batch of results.
+</p></li></ul><ul data-coord="prj3.umt:128:0"><li data-coord="prj3.umt:128:0"><p data-coord="prj3.umt:128:7">If previous results are possible, the top-level result should
+also contain a <samp data-coord="prj3.umt:128:91">prev</samp> property giving the index for the first
+item in the previous batch of results.
+</p></li></ul></li><li data-coord="prj3.umt:132:0"><p data-coord="prj3.umt:132:4">A <samp data-coord="prj3.umt:132:6">GET</samp> request to an object URL should return the corresponding
+object enhanced with a <samp data-coord="prj3.umt:132:96">links</samp> property containing a self-link.
+</p></li><li data-coord="prj3.umt:135:0"><p data-coord="prj3.umt:135:4">A <samp data-coord="prj3.umt:135:6">POST</samp> request to a category URL should create an object
+described by the JSON request body.  A successful request
+should result in a <samp data-coord="prj3.umt:135:148">201 CREATED</samp> status, with the <samp data-coord="prj3.umt:135:179">Location</samp>
+header set to the absolute URL of the newly created resource
+and response body set to an empty JSON object.
+</p></li><li data-coord="prj3.umt:141:0"><p data-coord="prj3.umt:141:4">A <samp data-coord="prj3.umt:141:6">DELETE</samp> request an object URL should delete the object
+specified by the URL.  A successful request should return a
+response body set to an empty JSON object.
+</p></li><li data-coord="prj3.umt:145:0"><p data-coord="prj3.umt:145:4">A <samp data-coord="prj3.umt:145:6">PATCH</samp> request to an object URL should update the object
+specified by the URL with the values in the JSON request body. A
+successful request should return a response body set to an empty
+JSON object.
+</p></li></ul><p data-coord="prj3.umt:150:0">All errors should be caught and reported with an appropriate HTTP
+status with response body containing suitable <samp data-coord="prj3.umt:150:112">status</samp>, <samp data-coord="prj3.umt:150:122">code</samp> and
+<samp data-coord="prj3.umt:150:133">message</samp> properties.
+</p><p data-coord="prj3.umt:154:0">The behavior of the program is illustrated in this
+<em data-coord="prj3.umt:154:65"><a href="extras/LOG" data-coord="prj3.umt:154:65">annotated log</a></em>.  A working version of the
+project is available at <em data-coord="prj3.umt:154:166"><a href="http://zdu.binghamton.edu:2345" data-coord="prj3.umt:154:166">&lt;http://zdu.binghamton.edu:2345&gt;</a></em> (as usual,
+this can only be reached from within the CS network).
+</p></section><section data-coord="prj3.umt:159:0"><h2 data-coord="prj3.umt:159:0">Provided Files</h2><p data-coord="prj3.umt:162:0">The <a href="./prj3-sol" data-coord="prj3.umt:162:18">prj3-sol</a> directory contains a start for your
+project.  It contains the following files:
+</p><dl data-coord="prj3.umt:165:0"><dt data-coord="prj3.umt:165:4"> <a href="./prj3-sol/blog544-ws.js?colorize=true" data-coord="prj3.umt:165:43">blog544-ws.js</a></dt><dd data-coord="prj3.umt:166:0"><p data-coord="prj3.umt:166:6">This skeleton file constitutes the guts of your project.  You
+will need to flesh out the skeleton, adding code as per the
+documentation.  You should feel free to add any auxiliary
+function, method definitions or even auxiliary files as
+required.
+</p></dd><dt data-coord="prj3.umt:172:4"> <a href="./prj3-sol/index.js?colorize=true" data-coord="prj3.umt:172:38">index.js</a></dt><dd data-coord="prj3.umt:173:0"><p data-coord="prj3.umt:173:6">This file provides the complete command-line behavior which is
+required by your program.  It requires
+<a href="./prj3-sol/blog544.js?colorize=true" data-coord="prj3.umt:173:159">blog544.js</a> and
+<a href="./prj3-sol/blog544-ws.js?colorize=true" data-coord="prj3.umt:173:222">blog544-ws.js.</a>
+</p></dd><dt data-coord="prj3.umt:178:4"> <a href="./prj3-sol/README" data-coord="prj3.umt:178:22">README</a></dt><dd data-coord="prj3.umt:179:0"><p data-coord="prj3.umt:179:6">A README file which must be submitted along with your project.
+It contains an initial header which you must complete (replace
+the dummy entries with your name, B-number and email address at
+which you would like to receive project-related email).  After
+the header you may include any content which you would like read
+during the grading of your project.
+</p></dd></dl></section><section data-coord="prj3.umt:187:0"><h2 data-coord="prj3.umt:187:0">Hints</h2><p data-coord="prj3.umt:190:0">Feel free to use any tools which you may find useful for this project.  Some
+suggestions:
+</p><ul data-coord="prj3.umt:193:0"><li data-coord="prj3.umt:193:0"><p data-coord="prj3.umt:193:4">Chrome's debugger as documented in earlier projects.
+</p></li><li data-coord="prj3.umt:195:0"><p data-coord="prj3.umt:195:4"><a href="https://chrome.google.com/webstore/detail/talend-api-tester-free-ed/aejoelaoggembcahagimdiliamlcdmfm?hl=en" data-coord="prj3.umt:195:114">Restlet</a> chrome client.
+</p></li><li data-coord="prj3.umt:197:0"><p data-coord="prj3.umt:197:4"><em data-coord="prj3.umt:197:103"><a href="https://chrome.google.com/webstore/detail/json-formatter/bcjindcccaagfpapjjmafapmmgkkhgoa?hl=en" data-coord="prj3.umt:197:103">Chrome JSON Formatter</a></em>.
+</p></li></ul><p data-coord="prj3.umt:199:0">The following steps are not prescriptive in that you may choose to
+ignore them as long as you meet all project requirements.
+</p><ol data-coord="prj3.umt:202:0"><li data-coord="prj3.umt:202:0"><p data-coord="prj3.umt:202:4">Read the project requirements thoroughly.  Look at the sample
+<a href="extras/LOG" data-coord="prj3.umt:202:84">log</a> to make sure you understand the necessary
+behavior.  Review the material covered in class including the
+<a href="../../slides/users-ws/code/users-ws" data-coord="prj3.umt:202:239">users-ws</a> example.
+</p></li><li data-coord="prj3.umt:207:0"><p data-coord="prj3.umt:207:4">The project requirements specifies only the top-level URL <samp data-coord="prj3.umt:207:62">/</samp>.  The
+choice of all other URLs is entirely up to you; decide on what
+those URLs should be.  You should use a regular structure
+for these URLs, as otherwise your routing will become extremely
+tedious.
+</p><p data-coord="prj3.umt:213:4">Your design should be set up to share a handler between multiple
+categories. So instead of having \(2 + 5\times 3 = 17\) handlers,
+you can get by with the following 7 handlers:
+</p><ol data-coord="prj3.umt:217:0"><li data-coord="prj3.umt:217:0"><p data-coord="prj3.umt:217:9">A <samp data-coord="prj3.umt:217:11">GET</samp> handler for <samp data-coord="prj3.umt:217:29">/</samp>.
+</p></li><li data-coord="prj3.umt:219:0"><p data-coord="prj3.umt:219:9">A <samp data-coord="prj3.umt:219:11">GET</samp> handler for meta-information.
+</p></li><li data-coord="prj3.umt:221:0"><p data-coord="prj3.umt:221:9">A <samp data-coord="prj3.umt:221:11">GET</samp> handler for paging through objects of a particular
+category.
+</p></li><li data-coord="prj3.umt:224:0"><p data-coord="prj3.umt:224:9">A <samp data-coord="prj3.umt:224:11">GET</samp> handler for returning a specific blog object in
+a particular category.
+</p></li><li data-coord="prj3.umt:227:0"><p data-coord="prj3.umt:227:9">A <samp data-coord="prj3.umt:227:11">POST</samp> handler for creating a new object in a particular
+category.
+</p></li><li data-coord="prj3.umt:230:0"><p data-coord="prj3.umt:230:9">A <samp data-coord="prj3.umt:230:11">DELETE</samp> handler for deleting a specific blog object in
+a particular category.
+</p></li><li data-coord="prj3.umt:233:0"><p data-coord="prj3.umt:233:9">A <samp data-coord="prj3.umt:233:11">PATCH</samp> handler for updating a specific blog object in
+a particular category.
+</p></li></ol></li><li data-coord="prj3.umt:237:0"><p data-coord="prj3.umt:237:4">Start your project by creating a <samp data-coord="prj3.umt:237:37">submit/prj3-sol</samp> directory in a
+new <samp data-coord="prj3.umt:237:78">prj3-sol</samp> branch of your <samp data-coord="prj3.umt:237:104">i444</samp> or <samp data-coord="prj3.umt:237:114">i544</samp> directory
+corresponding to your github repository. Change into the newly
+created <samp data-coord="prj3.umt:237:210">prj3-sol</samp> directory and initialize your project by
+running <samp data-coord="prj3.umt:237:274">npm init -y</samp>.
+</p><pre>    $ <span class="hl kwb">cd</span> ~<span class="hl opt">/</span>i?<span class="hl num">44</span>
+    $ git checkout <span class="hl kwb">-b</span> prj3-sol <span class="hl slc">#create new branch</span>
+    $ mkdir <span class="hl kwb">-p</span> submit<span class="hl opt">/</span>prj3-sol <span class="hl slc">#create new dir</span>
+    $ <span class="hl kwb">cd</span> submit<span class="hl opt">/</span>prj3-sol       <span class="hl slc">#enter project dir</span>
+    $ npm init <span class="hl kwb">-y</span>              <span class="hl slc">#initialize project</span></pre><p data-coord="prj3.umt:252:4">This will create a <samp data-coord="prj3.umt:252:23">package.json</samp> file; this file will be
+committed to your repository in the next step.
+</p></li><li data-coord="prj3.umt:255:0"><p data-coord="prj3.umt:255:4">Use your editor to add a top-level <samp data-coord="prj3.umt:255:39">"type": "module"</samp> entry
+to the generated <samp data-coord="prj3.umt:255:85">package.json</samp>.  Be careful with your
+syntax as JSON syntax is quite brittle; in particular,
+watch your commas.
+</p></li><li data-coord="prj3.umt:260:0"><p data-coord="prj3.umt:260:4">Commit into git:
+</p><pre>    $ git add package.json <span class="hl slc">#add package.json to git staging area</span>
+    $ git commit <span class="hl kwb">-m</span> <span class="hl str">&apos;started prj3&apos;</span> <span class="hl slc">#commit locally</span>
+    $ git push <span class="hl kwb">-u</span> origin prj3-sol <span class="hl slc">#push branch with changes</span>
+                                  <span class="hl slc">#to github</span></pre></li><li data-coord="prj3.umt:272:0"><p data-coord="prj3.umt:272:4">Install necessary dependencies using
+</p><pre>    $ npm <span class="hl kwc">install</span> mongodb body-parser cors express</pre><p data-coord="prj3.umt:279:4">This will install the library and its dependencies into a
+<samp data-coord="prj3.umt:279:66">node_modules</samp> directory created within your current directory.
+It will also create a <samp data-coord="prj3.umt:279:156">package-lock.json</samp> which must be committed
+into your git repository.
+</p><p data-coord="prj3.umt:284:4">The created <samp data-coord="prj3.umt:284:16">node_modules</samp> directory should <strong data-coord="prj3.umt:284:48">not</strong> be committed to
+git.  You can ensure that it will not be committed by simply
+mentioning it in a <samp data-coord="prj3.umt:284:158">.gitignore</samp> file.  You should have already
+taken care of this if you followed the
+<a href="../../misc/git-setup/git-setup.html" data-coord="prj3.umt:284:288">directions</a> provided when
+setting up github.  If you have not already done so, please add a
+line containing simply <samp data-coord="prj3.umt:284:410">node_modules</samp> to a <samp data-coord="prj3.umt:284:430">.gitignore</samp> file at
+the top-level of your <samp data-coord="prj3.umt:284:477">i444</samp> or <samp data-coord="prj3.umt:284:487">i544</samp> github project.
+</p></li><li data-coord="prj3.umt:294:0"><p data-coord="prj3.umt:294:4">Commit your changes:
+</p><pre>    $ git add package-lock.json
+    $ git commit <span class="hl kwb">-a -m</span> <span class="hl str">&apos;added package-lock&apos;</span>
+    $ git push</pre></li><li data-coord="prj3.umt:303:0"><p data-coord="prj3.umt:303:4">Copy the provided files into your project directory:
+</p><pre data-coord="prj3.umt:306:0">    $ cp -pr $HOME/cs544/projects/prj3/prj3-sol/* .
+    $ cp -pr $HOME/cs544/projects/prj3/prj3-sol/.* .
+</pre><p data-coord="prj3.umt:310:4">This should copy in the <samp data-coord="prj3.umt:310:28">README</samp> template, the <samp data-coord="prj3.umt:310:51">index.js</samp>, the
+<samp data-coord="prj3.umt:310:71">blog544-ws.js</samp> skeleton file and a <samp data-coord="prj3.umt:310:107">.gitignore</samp> file into your
+project directory.
+</p></li><li data-coord="prj3.umt:314:0"><p data-coord="prj3.umt:314:4">Decide whether you want to use your solution to <em data-coord="prj3.umt:314:77"><a href="../prj2/prj2.html" data-coord="prj3.umt:314:77">Project 2</a></em> or the <em data-coord="prj3.umt:314:111"><a href="../prj2-sol" data-coord="prj3.umt:314:111">provided solution</a></em>:
+</p><ul data-coord="prj3.umt:317:0"><li data-coord="prj3.umt:317:0"><p data-coord="prj3.umt:317:8">If you are using your solution, copy over all the necessary
+files. Please note that the provided files assume the
+existence of <samp data-coord="prj3.umt:317:151">blog544.js</samp>, <samp data-coord="prj3.umt:317:165">blog-error.js</samp> and <samp data-coord="prj3.umt:317:185">meta.js</samp>
+files.
+</p></li><li data-coord="prj3.umt:322:0"><p data-coord="prj3.umt:322:8">If you are using the provided solution, copy over the necessary
+files:
+</p><pre>        <span class="hl kwa">for</span> f <span class="hl kwa">in</span> blog544.js blog-error.js data.js \
+                 meta.js validator.js <span class="hl opt">;</span> \
+        <span class="hl kwa">do</span>
+          <span class="hl kwc">cp</span> ~<span class="hl opt">/</span>cs544<span class="hl opt">/</span>projects<span class="hl opt">/</span>prj2-sol<span class="hl opt">/</span><span class="hl kwd">$f</span> . <span class="hl opt">;</span> \
+        <span class="hl kwa">done</span></pre></li></ul></li><li data-coord="prj3.umt:334:0"><p data-coord="prj3.umt:334:4">You should now be able to get a usage message and start the server:
+</p><pre>    .<span class="hl opt">/</span>index.js
+    usage<span class="hl opt">:</span> index.js PORT MONGO_DB_URL <span class="hl opt">[</span>DATA_DIR<span class="hl opt">]</span>
+    $ .<span class="hl opt">/</span>index.js <span class="hl num">2345</span> mongodb<span class="hl opt">://</span>localhost<span class="hl opt">:</span><span class="hl num">27017</span><span class="hl opt">/</span>blog544
+    listening on port <span class="hl num">2345</span></pre><p data-coord="prj3.umt:344:4">The server will be listening for incoming requests; you can
+stop it by using ^C.
+</p><p data-coord="prj3.umt:347:4">[See the provided <a href="extras/LOG" data-coord="prj3.umt:347:36">log</a> for how to start the
+server in the background while recording its PID in a
+<samp data-coord="prj3.umt:347:123">.pid</samp> file which can be used to kill it subsequently.]
+</p></li><li data-coord="prj3.umt:351:0"><p data-coord="prj3.umt:351:4">Replace the <samp data-coord="prj3.umt:351:16">XXX</samp> entries in the <samp data-coord="prj3.umt:351:37">README</samp> template.
+</p></li><li data-coord="prj3.umt:353:0"><p data-coord="prj3.umt:353:4">Commit your project to github:
+</p><pre data-coord="prj3.umt:356:0">    $ git add .
+    $ git commit -a -m 'set up prj3 files'
+    $ git push
+</pre></li><li data-coord="prj3.umt:361:0"><p data-coord="prj3.umt:361:4">Open the copy of the skeleton <samp data-coord="prj3.umt:361:34">blog544-ws.js</samp> file in your project
+directory.  It contains code to start the web server, the start of
+a routing function, error handling code and a utility function.
+It does not contain code for any handlers.
+</p></li><li data-coord="prj3.umt:366:0"><p data-coord="prj3.umt:366:4">Set up all your routes using the method of the
+<em data-coord="prj3.umt:366:96"><a href="https://expressjs.com/en/api.html#app" data-coord="prj3.umt:366:96">expressjs app</a></em>
+corresponding to the HTTP method. Note that the same handler can
+be used for multiple categories as long as the category is passed
+into the handler.  Instead of hardcoding your URLs for the
+different categories, you can build them dynamically by looping
+through the <samp data-coord="prj3.umt:366:398">meta</samp> information.
+</p></li><li data-coord="prj3.umt:374:0"><p data-coord="prj3.umt:374:4">Create dummy handlers for all the handlers you specified
+when setting up your routes.
+</p></li><li data-coord="prj3.umt:377:0"><p data-coord="prj3.umt:377:4">Start out ignoring all link requirements.  Complete your meta-info
+handler ignoring the self link requirement.  Simply grab the meta
+information from the application context and write it into the
+response object using
+<a href="https://expressjs.com/en/api.html#res.json" data-coord="prj3.umt:377:284">res.json().</a>  Test
+and verify.
+</p></li><li data-coord="prj3.umt:384:0"><p data-coord="prj3.umt:384:4">Complete your <samp data-coord="prj3.umt:384:18">GET</samp> handler for object URLs.  You should be able
+get the object id from your object URL using
+<a href="https://expressjs.com/en/api.html#req.params" data-coord="prj3.umt:384:170">req.params.</a>  Then
+simply <samp data-coord="prj3.umt:384:199">await</samp> the <samp data-coord="prj3.umt:384:211">find()</samp> method of the blog data store passing
+in the id.  Stuff the returned object into the response as JSON.
+</p></li><li data-coord="prj3.umt:390:0"><p data-coord="prj3.umt:390:4">Create a utility function which when given a request, creates a
+self-link.  Use this utility function to add a self-link to the
+top-level response in the previous step as well as to the returned
+object.
+</p></li><li data-coord="prj3.umt:395:0"><p data-coord="prj3.umt:395:4">Complete your handler for <samp data-coord="prj3.umt:395:30">/</samp>. Use the above utility
+function for the self-link.  Build the category links
+by looping through meta properties.
+</p></li><li data-coord="prj3.umt:399:0"><p data-coord="prj3.umt:399:4">Complete your <samp data-coord="prj3.umt:399:18">DELETE</samp> handler.  You should be get the object id
+from your object URL and then <samp data-coord="prj3.umt:399:103">await</samp> the <samp data-coord="prj3.umt:399:115">remove()</samp> method of the
+blog data store passing in the id.
+</p></li><li data-coord="prj3.umt:403:0"><p data-coord="prj3.umt:403:4">Complete your <samp data-coord="prj3.umt:403:18">PATCH</samp> handler.  You should be get the object id
+from your object URL, combine it with the request body obtained
+using <samp data-coord="prj3.umt:403:146">req.body</samp> and then <samp data-coord="prj3.umt:403:166">await</samp> the <samp data-coord="prj3.umt:403:178">update()</samp> method of the
+blog data store passing in the id.
+</p></li><li data-coord="prj3.umt:408:0"><p data-coord="prj3.umt:408:4">Complete your <samp data-coord="prj3.umt:408:18">POST</samp> handler.  You can get the object being
+created from the request body using <samp data-coord="prj3.umt:408:104">req.body</samp> and await the id
+returned by the <samp data-coord="prj3.umt:408:152">create()</samp> method of the blog data store.  Create
+an object URL for the newly created object (using the returned id
+and the URL of the request) and use it to set the <samp data-coord="prj3.umt:408:326">Location</samp>
+header using <a href="https://expressjs.com/en/api.html#res.append" data-coord="prj3.umt:408:406">res.append().</a>
+</p></li><li data-coord="prj3.umt:416:0"><p data-coord="prj3.umt:416:4">Complete your handler to list all the objects when given a <samp data-coord="prj3.umt:416:63">GET</samp>
+request to a category URL. You can use
+<a href="https://expressjs.com/en/api.html#req.query" data-coord="prj3.umt:416:163">req.query</a> to obtain
+all the query parameters which you can provide to the <samp data-coord="prj3.umt:416:241">find()</samp>
+method of the blog data store for filtering the results.  Add the
+next and previous links and values.  Note that nodejs's
+<a href="https://nodejs.org/api/querystring.html" data-coord="prj3.umt:416:427">querystring.stringify()</a>
+can be used convert an object to a query-parameters string
+(without the leading <samp data-coord="prj3.umt:416:539">?</samp>), Test to ensure that you are respecting
+the <samp data-coord="prj3.umt:416:592">_index</samp> and <samp data-coord="prj3.umt:416:605">_count</samp> query parameters.
+</p></li><li data-coord="prj3.umt:427:0"><p data-coord="prj3.umt:427:4">Iterate until you meet all requirements.  
+</p></li></ol><p data-coord="prj3.umt:429:0">It is a good idea to commit and push your project periodically
+whenever you have made significant changes.  When it is complete
+please follow the procedure given in the
+<em data-coord="prj3.umt:429:219"><a href="../../misc/git-setup/git-setup.html#prj-submit" data-coord="prj3.umt:429:219">git setup</a></em> document
+to submit your project to the TA via github.
+</p></section></section>
+    </div> <!-- #content -->
+  </body>
+</html>

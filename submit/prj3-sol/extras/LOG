@@ -1,0 +1,619 @@
+# start server in background (using existing data in db)
+$ ./index.js 2345 mongodb://localhost:27017/blog544 &
+[5] 6295
+listening on port 2345
+
+# record PID of server process in a file
+$ echo $! > .pid
+
+# show PID captured in file
+$ cat .pid
+6295
+
+# since server logs errors on the terminal it was started in,
+# interact with server in a separate terminal to avoid server
+# errors getting interspersed with interaction log:
+
+# GET /
+# -s option for "silent" output without progress indicators.
+$ curl -s  'http://localhost:2345' | json_pp
+{
+   "links" : [
+      {
+         "rel" : "self",
+         "name" : "self",
+         "url" : "http://localhost:2345"
+      },
+      {
+         "url" : "http://localhost:2345/meta",
+         "name" : "meta",
+         "rel" : "describedby"
+      },
+      {
+         "rel" : "collection",
+         "url" : "http://localhost:2345/users",
+         "name" : "users"
+      },
+      {
+         "rel" : "collection",
+         "name" : "articles",
+         "url" : "http://localhost:2345/articles"
+      },
+      {
+         "rel" : "collection",
+         "name" : "comments",
+         "url" : "http://localhost:2345/comments"
+      }
+   ]
+}
+
+# Access meta-info by accessing above meta url
+$ curl -s  'http://localhost:2345/meta' | json_pp
+{
+   "comments" : [
+      {
+         "name" : "id",
+         "forbidden" : [
+            "create"
+         ],
+         "friendlyName" : "comment ID",
+         "required" : [
+            "update",
+            "remove"
+         ]
+      },
+      ...
+   ],
+   "users" : [
+     ...
+   ],
+   "articles" : [
+     ...
+   ],
+   "links" : [
+      {
+         "rel" : "self",
+         "href" : "http://localhost:2345/meta",
+         "name" : "self"
+      }
+   ],
+}
+
+# display info for latest 5 registered users
+# note ellen22 is not in standard data
+$ curl -s  'http://localhost:2345/users' | json_pp
+{
+   "users" : [
+      {
+         "id" : "ellen22",
+         "lastName" : "Jameway",
+         "updateTime" : "2020-03-24T08:02:52.223Z",
+         "email" : "ellen-jamew@gmail.com",
+         "creationTime" : "2020-03-24T08:02:52.223Z",
+         "roles" : [
+            "author"
+         ],
+         "links" : [
+            {  #self link for ellen22
+               "href" : "http://localhost:2345/users/ellen22",
+               "name" : "self",
+               "rel" : "self"
+            }
+         ],
+         "firstName" : "Ellen"
+      },
+      {
+         "creationTime" : "2020-02-02T05:27:40.000Z",
+         "roles" : [
+            "commenter"
+         ],
+         "links" : [
+            {
+               "href" : "http://localhost:2345/users/odette46",
+               "name" : "self",
+               "rel" : "self"
+            }
+         ],
+         "firstName" : "Odette",
+         "id" : "odette46",
+         "lastName" : "Wilson",
+         "updateTime" : "2020-02-02T05:27:40.000Z",
+         "email" : "odette46@binghamton.edu"
+      },
+      {
+         "id" : "betty74",
+         "email" : "betty74@yahoo.com",
+         "updateTime" : "2020-02-01T22:10:22.000Z",
+         "lastName" : "Trump",
+         "roles" : [
+            "commenter"
+         ],
+         "creationTime" : "2020-02-01T22:10:22.000Z",
+         "firstName" : "Betty",
+         "links" : [
+            {
+               "href" : "http://localhost:2345/users/betty74",
+               "name" : "self",
+               "rel" : "self"
+            }
+         ]
+      },
+      {
+         "id" : "victor55",
+         "email" : "victor55@gmail.com",
+         "updateTime" : "2020-02-01T08:16:06.000Z",
+         "lastName" : "Grant",
+         "roles" : [
+            "commenter"
+         ],
+         "creationTime" : "2020-02-01T08:16:06.000Z",
+         "links" : [
+            {
+               "href" : "http://localhost:2345/users/victor55",
+               "rel" : "self",
+               "name" : "self"
+            }
+         ],
+         "firstName" : "Victor"
+      },
+      {
+         "id" : "samuel05",
+         "email" : "samuel05@binghamton.edu",
+         "updateTime" : "2020-01-31T12:27:56.000Z",
+         "lastName" : "Monroe",
+         "roles" : [
+            "commenter"
+         ],
+         "creationTime" : "2020-01-31T12:27:56.000Z",
+         "firstName" : "Samuel",
+         "links" : [
+            {
+               "href" : "http://localhost:2345/users/samuel05",
+               "name" : "self",
+               "rel" : "self"
+            }
+         ]
+      }
+   ],
+   "links" : [ #paging links, note no prev link
+      {
+         "rel" : "self",
+         "name" : "self",
+         "url" : "http://localhost:2345/users"
+      },
+      {
+         "rel" : "next",
+         "name" : "next",
+         "url" : "http://localhost:2345/users?_index=5"
+      }
+   ],
+   "next" : 5
+}
+
+# filter users by firstName, restrict to 2 results
+$ curl -s  'http://localhost:2345/users?firstName=Harry&_count=2' | json_pp
+{
+   "links" : [
+      {
+         "url" : "http://localhost:2345/users?firstName=Harry&_count=2",
+         "name" : "self",
+         "rel" : "self"
+      },
+      {
+         "url" : "http://localhost:2345/users?firstName=Harry&_count=2&_index=2",
+         "rel" : "next",
+         "name" : "next"
+      }
+   ],
+   "next" : 2,
+   "users" : [
+      {
+         "links" : [
+            {
+               "href" : "http://localhost:2345/users/harry57",
+               "name" : "self",
+               "rel" : "self"
+            }
+         ],
+         "id" : "harry57",
+         "firstName" : "Harry",
+         "updateTime" : "2020-01-11T01:30:42.000Z",
+         "lastName" : "McKinley",
+         "email" : "harry57@gmail.com",
+         "roles" : [
+            "commenter"
+         ],
+         "creationTime" : "2020-01-11T01:30:42.000Z"
+      },
+      {
+         "roles" : [
+            "commenter"
+         ],
+         "email" : "harry69@yahoo.com",
+         "creationTime" : "2020-01-05T05:51:52.000Z",
+         "links" : [
+            {
+               "name" : "self",
+               "rel" : "self",
+               "href" : "http://localhost:2345/users/harry69"
+            }
+         ],
+         "updateTime" : "2020-01-05T05:51:52.000Z",
+         "firstName" : "Harry",
+         "id" : "harry69",
+         "lastName" : "Harding"
+      }
+   ]
+}
+
+# use above next link to get next page of results
+$ curl -s  'http://localhost:2345/users?firstName=Harry&_count=2&_index=2' | json_pp
+{
+   "prev" : 0,
+   "next" : 4,
+   "links" : [ #note that now we have both next and prev links
+      {
+         "url" : "http://localhost:2345/users?firstName=Harry&_count=2&_index=2",
+         "name" : "self",
+         "rel" : "self"
+      },
+      {
+         "rel" : "next",
+         "name" : "next",
+         "url" : "http://localhost:2345/users?firstName=Harry&_count=2&_index=4"
+      },
+      {
+         "rel" : "prev",
+         "name" : "prev",
+         "url" : "http://localhost:2345/users?firstName=Harry&_count=2&_index=0"
+      }
+   ],
+   "users" : [
+      {
+         "roles" : [
+            "commenter"
+         ],
+         "email" : "harry72@yahoo.com",
+         "id" : "harry72",
+         "links" : [
+            {
+               "href" : "http://localhost:2345/users/harry72",
+               "rel" : "self",
+               "name" : "self"
+            }
+         ],
+         "creationTime" : "2019-11-30T01:54:26.000Z",
+         "firstName" : "Harry",
+         "lastName" : "Monroe",
+         "updateTime" : "2019-11-30T01:54:26.000Z"
+      },
+      {
+         "updateTime" : "2019-11-27T10:59:46.000Z",
+         "lastName" : "Garfield",
+         "firstName" : "Harry",
+         "creationTime" : "2019-11-27T10:59:46.000Z",
+         "links" : [
+            {
+               "name" : "self",
+               "href" : "http://localhost:2345/users/harry78",
+               "rel" : "self"
+            }
+         ],
+         "id" : "harry78",
+         "email" : "harry78@gmail.com",
+         "roles" : [
+            "commenter"
+         ]
+      }
+   ]
+}
+
+# since there are only 3 Adrian's in our data, we get only 3
+# results, without any next or prev links
+$ curl -s  'http://localhost:2345/users?firstName=Adrian' | json_pp
+{
+   "links" : [
+      {
+         "rel" : "self",
+         "name" : "self",
+         "url" : "http://localhost:2345/users?firstName=Adrian"
+      }
+   ],
+   "users" : [
+      {
+         "updateTime" : "2019-12-24T06:30:22.000Z",
+         "email" : "adrian99@yahoo.com",
+         "creationTime" : "2019-12-24T06:30:22.000Z",
+         "roles" : [
+            "commenter"
+         ],
+         "id" : "adrian99",
+         "links" : [
+            {
+               "rel" : "self",
+               "href" : "http://localhost:2345/users/adrian99",
+               "name" : "self"
+            }
+         ],
+         "firstName" : "Adrian",
+         "lastName" : "Garfield"
+      },
+      {
+         "firstName" : "Adrian",
+         "lastName" : "Fillmore",
+         "creationTime" : "2019-12-02T11:54:24.000Z",
+         "roles" : [
+            "author",
+            "commenter"
+         ],
+         "id" : "adrian75",
+         "links" : [
+            {
+               "name" : "self",
+               "rel" : "self",
+               "href" : "http://localhost:2345/users/adrian75"
+            }
+         ],
+         "email" : "adrian75@binghamton.edu",
+         "updateTime" : "2019-12-02T11:54:24.000Z"
+      },
+      {
+         "lastName" : "Cleveland",
+         "firstName" : "Adrian",
+         "id" : "adrian",
+         "links" : [
+            {
+               "name" : "self",
+               "href" : "http://localhost:2345/users/adrian",
+               "rel" : "self"
+            }
+         ],
+         "creationTime" : "2019-10-26T13:05:29.000Z",
+         "roles" : [
+            "admin",
+            "author",
+            "commenter"
+         ],
+         "email" : "adrian@binghamton.edu",
+         "updateTime" : "2019-10-26T13:05:29.000Z"
+      }
+   ]
+}
+
+# use the self link for the last Adrian above to access directly
+$ curl -s 'http://localhost:2345/users/adrian' | json_pp
+{
+   "users" : [
+      {
+         "links" : [
+            {
+               "rel" : "self",
+               "name" : "self",
+               "href" : "http://localhost:2345/users/adrian/adrian"
+            }
+         ],
+         "firstName" : "Adrian",
+         "lastName" : "Cleveland",
+         "roles" : [
+            "admin",
+            "author",
+            "commenter"
+         ],
+         "email" : "adrian@binghamton.edu",
+         "creationTime" : "2019-10-26T13:05:29.000Z",
+         "id" : "adrian",
+         "updateTime" : "2019-10-26T13:05:29.000Z"
+      }
+   ]
+}
+
+# update lastName to Harrison
+# -X option to specify HTTP method
+# -d specifies data for request body
+# -H specifies request header, in this case we specify that
+#    our content type is JSON.
+$ curl -s -X PATCH -d '{"lastName": "Harrison"}' \
+       -H 'content-type: application/json' \
+       'http://localhost:2345/users/adrian' \
+       | json_pp
+{}
+
+# verify update
+$ curl -s 'http://localhost:2345/users/adrian' | json_pp
+{
+   "users" : [
+      {
+         "creationTime" : "2019-10-26T13:05:29.000Z",
+         "email" : "adrian@binghamton.edu",
+         "firstName" : "Adrian",
+         "roles" : [
+            "admin",
+            "author",
+            "commenter"
+         ],
+         "lastName" : "Harrison",
+         "links" : [
+            {
+               "href" : "http://localhost:2345/users/adrian/adrian",
+               "rel" : "self",
+               "name" : "self"
+            }
+         ],
+         "id" : "adrian",
+         "updateTime" : "2020-03-24T17:47:47.944Z"
+      }
+   ]
+}
+
+# attempt to remove adrian
+$ curl -s -X DELETE 'http://localhost:2345/users/adrian' | json_pp
+{
+   "code" : "BAD_ID",
+   "message" : "users adrian referenced by authorId for articles 39.49279, 14.20207, 83.29094, 69.48629, 85.05886; users adrian referenced by commenterId for comments 158.19031, 709.35413, 711.47968, 450.30225, 821.94281",
+   "status" : 400
+}
+
+# look for up to 2 comments by adrian
+$ curl -s  'http://localhost:2345/comments?commenterId=adrian&_count=2' | json_pp
+{
+   "links" : [
+      {
+         "url" : "http://localhost:2345/comments?commenterId=adrian&_count=2",
+         "name" : "self",
+         "rel" : "self"
+      },
+      {
+         "rel" : "next",
+         "name" : "next",
+         "url" : "http://localhost:2345/comments?commenterId=adrian&_count=2&_index=2"
+      }
+   ],
+   "comments" : [
+      {
+         "creationTime" : "2020-02-02T06:35:56.000Z",
+         "links" : [
+            {
+               "href" : "http://localhost:2345/comments/158.19031",
+               "rel" : "self",
+               "name" : "self"
+            }
+         ],
+         "updateTime" : "2020-02-02T06:35:56.000Z",
+         "content" : "\"'... .\"\n\n",
+         "commenterId" : "adrian",
+         "articleId" : "23.05351",
+         "id" : "158.19031"
+      },
+      {
+         "id" : "709.35413",
+         "articleId" : "75.34547",
+         "links" : [
+            {
+               "name" : "self",
+               "rel" : "self",
+               "href" : "http://localhost:2345/comments/709.35413"
+            }
+         ],
+         "updateTime" : "2020-01-29T14:15:26.000Z",
+         "content" : " ... ",
+         "commenterId" : "adrian",
+         "creationTime" : "2020-01-29T14:15:26.000Z"
+      }
+   ],
+   "next" : 2
+}
+
+# retrieve last comment above
+$ curl -s  'http://localhost:2345/comments/709.35413' | json_pp
+{
+   "comments" : [
+      {
+         "content" : "...",
+         "links" : [
+            {
+               "href" : "http://localhost:2345/comments/709.35413/709.35413",
+               "rel" : "self",
+               "name" : "self"
+            }
+         ],
+         "updateTime" : "2020-01-29T14:15:26.000Z",
+         "id" : "709.35413",
+         "articleId" : "75.34547",
+         "commenterId" : "adrian",
+         "creationTime" : "2020-01-29T14:15:26.000Z"
+      }
+   ]
+}
+
+# delete comment retrieved above
+$ curl -s -X DELETE  'http://localhost:2345/comments/709.35413' | json_pp
+{}
+
+# get error if we attempt to delete again
+$ curl -s -X DELETE  'http://localhost:2345/comments/709.35413' | json_pp
+{
+   "code" : "BAD_ID",
+   "status" : 400,
+   "message" : "no comments for id 709.35413 in remove"
+}
+
+# verify it is really gone
+$ curl -s 'http://localhost:2345/comments/709.35413' | json_pp
+{
+   "comments" : []
+}
+
+# show contents of a file which we use subsequently
+$ cat user-create.json 
+{
+  "id": "ellen23",
+  "firstName": "Ellen",
+  "lastName": "Jameway",
+  "email": "ellen-jamew@gmail.com",
+  "roles": [ "author" ]
+}
+
+# Create user with content specified by file user-create.json
+# -i option shows returned headers
+# note Location header gives URL of newly created resource
+$ curl -s -i -X POST -d @user-create.json \
+     -H 'content-type: application/json' \
+     'http://localhost:2345/users' 
+HTTP/1.1 201 Created
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Location: http://localhost:2345/users/ellen23
+Content-Type: application/json; charset=utf-8
+Content-Length: 2
+ETag: W/"2-vyGp6PvFo4RvsFtPoIWeCReyIC8"
+Date: Tue, 24 Mar 2020 17:55:39 GMT
+Connection: keep-alive
+
+{}
+
+# use above location header to retrieve ellen23
+$ curl -s 'http://localhost:2345/users/ellen23' | json_pp
+{
+   "users" : [
+      {
+         "creationTime" : "2020-03-24T17:55:39.706Z",
+         "email" : "ellen-jamew@gmail.com",
+         "updateTime" : "2020-03-24T17:55:39.706Z",
+         "lastName" : "Jameway",
+         "firstName" : "Ellen",
+         "id" : "ellen23",
+         "links" : [
+            {
+               "rel" : "self",
+               "name" : "self",
+               "href" : "http://localhost:2345/users/ellen23/ellen23"
+            }
+         ],
+         "roles" : [
+            "author"
+         ]
+      }
+   ]
+}
+
+# attempt to create again
+$ curl -s -i -X POST -d @user-create.json \
+   -H 'content-type: application/json' \
+   'http://localhost:2345/users' 
+HTTP/1.1 409 Conflict
+X-Powered-By: Express
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 88
+ETag: W/"58-FT4lvYrRh2oBKNoE/HTv+iViJws"
+Date: Tue, 24 Mar 2020 18:04:02 GMT
+Connection: keep-alive
+
+{"status":409,"code":"EXISTS","message":"users object having id ellen23 already exists"}
+$
+
+# back in terminal where server was started
+# kill server using .pid file
+$ kill `cat .pid`
+[5]+  Terminated              ./index.js 2345 mongodb://localhost:27017/blog544
+$
