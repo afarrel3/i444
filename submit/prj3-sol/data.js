@@ -116,12 +116,12 @@ export default class Data {
       //build string of referring id's from referring categories
       const catIds =
         (await this.find(cat, {[field]: removeSpec.id})).
-	map(o => o.id).
-        join(', ');
+	        map(o => o.id).
+          join(', ');
       if (catIds.length > 0) {
-	const msg = `${category} ${removeSpec.id} referenced by ${field} ` +
-                    `for ${cat} ${catIds}`;
-	errors.push(new BlogError('BAD_ID', msg));
+        const msg = `${category} ${removeSpec.id} referenced by ${field} ` + 
+          `for ${cat} ${catIds}`;
+	      errors.push(new BlogError('BAD_ID', msg));
       }
     }
     if (errors.length > 0) throw errors;
