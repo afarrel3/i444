@@ -12,8 +12,8 @@ export default class Blog544Ws {
     try {
       const topLinksData = (await axios.get(url)).data;
       const topLinksPairs =
-	    topLinksData.links.filter(e => e.name !== 'self')
-	    .map(e => [e.name, e.url]);
+	      topLinksData.links.filter(e => e.name !== 'self')
+	      .map(e => [e.name, e.url]);
       const topLinks = Object.fromEntries(topLinksPairs);
       const meta = (await axios.get(topLinks.meta)).data;
       delete topLinks.meta;
@@ -28,7 +28,7 @@ export default class Blog544Ws {
     try {
       const url = this.topLinks[category];
       if (!url) {
-	throw `no web service for category ${category}`;
+	      throw `no web service for category ${category}`;
       }
       const response = await axios.get(url, { params: q });
       return response.data;
